@@ -8,6 +8,8 @@ clock = pygame.time.Clock() # Creating a clock object to control the game's fram
 
 test_font = pygame.font.Font('font/Pixeltype.ttf', 50)
 
+game_active = True
+
 # new images are on septate surface
 sky_surface = pygame.image.load('graphics/Sky.png').convert()
 ground_surface = pygame.image.load('graphics/ground.png').convert()
@@ -29,47 +31,50 @@ while True:
         if event.type == pygame.QUIT:
             pygame.quit()
             exit() # Exiting the game if the user closes the window
-        if event.type == pygame.MOUSEMOTION:
-             if player_rect.collidepoint(event.pos):
-                 player_grav = -10
 
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE:
-                player_grav = -10
+        if game_active:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if player_rect.collidepoint(event.pos) and player_rect.bottom >= 300:
+                    player_grav = -20
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE and player_rect.bottom >= 300:
+                    player_grav = -20
+        else:
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                game_active = True
+                snail_rect.left = 800
 
     # draw all our elements
     # update everything
+    if game_active:
+        # draw the sky
+        screen.blit(sky_surface,(0,0))
+        # draw the ground
+        screen.blit(ground_surface,(0,300))
+        pygame.draw.rect(screen,'#c0eBec',score_rect)
+        pygame.draw.rect(screen,'#c0eBec',score_rect, 10)
+        
+        # draw the text
+        screen.blit(score_surface,score_rect)
+        
+        # draw & move the snail
+        snail_rect.x -= 4
+        if snail_rect.right <= 0: snail_rect.left = 800
+        screen.blit(snail_surface,snail_rect)
 
-    # draw the sky
-    screen.blit(sky_surface,(0,0))
-    # draw the ground
-    screen.blit(ground_surface,(0,300))
-    pygame.draw.rect(screen,'#c0eBec',score_rect)
-    pygame.draw.rect(screen,'#c0eBec',score_rect, 10)
-    
-    # draw the text
-    screen.blit(score_surface,score_rect)
-    
-    # draw & move the snail
-    snail_rect.x -= 4
-    if snail_rect.right <= 0: snail_rect.left = 800
-    screen.blit(snail_surface,snail_rect)
+        # player
+        player_grav += 1
+        player_rect.y += player_grav # type: ignore
+        if player_rect.bottom >= 300: player_rect.bottom = 300
+        screen.blit(player_surf,player_rect)
 
-    # Player
-    player_grav += 0.2
-    player_rect.y += player_grav # type: ignore
-    screen.blit(player_surf,player_rect)
-
-    # keys = pygame.key.get_pressed()
-    # if keys[pygame.K_SPACE]:
-    #     print('jump')
-
-    # if player_rect.colliderect(snail_rect):
-    #     print('collision')
-
-    # mouse_pos = pygame.mouse.get_pos()
-    # if player_rect.collidepoint(mouse_pos):
-    #     print(pygame.mouse.get_pressed())
+        # collision
+        if snail_rect.colliderect(player_rect):
+            game_active = False
+    else:
+        screen.fill((94,129,162))
+        
 
     pygame.display.update()
     clock.tick(60)
