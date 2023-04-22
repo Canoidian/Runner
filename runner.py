@@ -12,7 +12,7 @@ test_font = pygame.font.Font('font/Pixeltype.ttf', 50)
 sky_surface = pygame.image.load('graphics/Sky.png').convert()
 ground_surface = pygame.image.load('graphics/ground.png').convert()
 
-score_surface = test_font.render('Runner', False, 'Black')
+score_surface = test_font.render('Runner', False, (64,64,64))
 score_rect = score_surface.get_rect(center = (400,50))
 
 # Make sure to add the "_alpha" when converting the image, to make image background transparent
@@ -21,6 +21,7 @@ snail_rect = snail_surface.get_rect(bottomright = (600,300))
 
 player_surf = pygame.image.load('graphics/Player/player_walk_1.png').convert_alpha()
 player_rect = player_surf.get_rect(midbottom = (80,300))
+player_grav = 0
 
 # Checking for Pygame events (such as quitting the game)
 while True:
@@ -28,8 +29,13 @@ while True:
         if event.type == pygame.QUIT:
             pygame.quit()
             exit() # Exiting the game if the user closes the window
-        # if event.type == pygame.MOUSEMOTION:
-        #     if player_rect.collidepoint(event.pos): print('collision')
+        if event.type == pygame.MOUSEMOTION:
+             if player_rect.collidepoint(event.pos):
+                 player_grav = -10
+
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                player_grav = -10
 
     # draw all our elements
     # update everything
@@ -38,6 +44,9 @@ while True:
     screen.blit(sky_surface,(0,0))
     # draw the ground
     screen.blit(ground_surface,(0,300))
+    pygame.draw.rect(screen,'#c0eBec',score_rect)
+    pygame.draw.rect(screen,'#c0eBec',score_rect, 10)
+    
     # draw the text
     screen.blit(score_surface,score_rect)
     
@@ -46,8 +55,14 @@ while True:
     if snail_rect.right <= 0: snail_rect.left = 800
     screen.blit(snail_surface,snail_rect)
 
-    # draw the player
+    # Player
+    player_grav += 0.2
+    player_rect.y += player_grav # type: ignore
     screen.blit(player_surf,player_rect)
+
+    # keys = pygame.key.get_pressed()
+    # if keys[pygame.K_SPACE]:
+    #     print('jump')
 
     # if player_rect.colliderect(snail_rect):
     #     print('collision')
